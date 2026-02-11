@@ -18,18 +18,14 @@ filepath = r"C:\Users\felix\ames_housing-ml\data\AmesHousing.csv"
 df = pd.read_csv(filepath)
 
 X = df.drop(columns=["SalePrice"])
-y = df["SalePrice"]
+y = np.log1p(df["SalePrice"])
 
 X = X.drop(columns=["Order", "PID"], errors="ignore")
-missing_col = ['Garage Type', 'Garage Yr Blt', 'Garage Finish', 'Garage Qual', 'Garage Cond', 'Bsmt Qual', 'Mas Vnr Area','Bsmt Exposure', 'BsmtFin Type 1', 'BsmtFin Type 2']
-df = df.dropna(subset=missing_col)
 
 categorical_cols = X.select_dtypes(include="object").columns.tolist()
 numerical_cols = X.select_dtypes(exclude="object").columns.tolist()
+cat_features = [X.columns.get_loc(col) for col in categorical_cols]
 
-
-df = df.fillna(df.median(numeric_only=True))
-df = df.fillna(df[categorical_cols].mode().iloc[0])
 
 preprocess = ColumnTransformer(
     transformers=[
@@ -46,15 +42,6 @@ preprocess = ColumnTransformer(
 )
 
 models = {
-    "XGBoost": XGBRegressor(
-        n_estimators=500,
-        learning_rate=0.05,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42,
-        tree_method="hist",
-    ),
     "CatBoost": CatBoostRegressor(
         iterations=1000,
         learning_rate=0.05,
